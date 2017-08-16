@@ -2,7 +2,7 @@
 //  LinBlueToothEngine.h
 //  BlueThooth
 //
-//  Created by Myfly on 17/8/16.
+//  Created by LinYouMu on 17/8/16.
 //  Copyright © 2017年 Myfly. All rights reserved.
 //
 
@@ -21,11 +21,6 @@
 //写特征-id
 #define WRITE_CHARACTERISTIC @"00000102-1212-efde-1523-785feabcd123"
 
-typedef NS_ENUM(NSInteger,BlueSendModelType) {
-    BlueDataModelLeftType = 0,
-    BlueDataModelRightType,
-    BlueDataModelSkinSingleType
-};
 @interface LinBlueToothEngine : NSObject<CBCentralManagerDelegate, CBPeripheralDelegate>
 {
     NSInteger _curretnTime;
@@ -69,30 +64,25 @@ typedef NS_ENUM(NSInteger,BlueSendModelType) {
  * 扫描设备
  */
 - (void)startScanWithFailure:(void (^)(NSString * status))failure;
+
 /*
  * 停止扫描设备
  */
 - (void)stopScan;
+
 /*
  *  发送数据
  */
-- (void)sendWriteData:(NSData *)data WithType:(BlueSendModelType)senderType;
+- (void)sendWriteData:(NSData *)data;
 
 /**
  *  连接
  */
--(void)startconnectServiceWithType:(BlueSendModelType)senderType;
+-(void)startconnectService;
 
 /**
  *  取消连接
  */
 -(void)cancelConnectService;
-
-/**
- * *************************************************************
- * 工具类方法
- */
-//- (void)reSendParallelMessageMechanism:(SKGBlueCmdModel * )sendModel;
-
 
 @end

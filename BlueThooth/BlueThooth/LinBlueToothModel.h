@@ -2,7 +2,7 @@
 //  LinBlueToothModel.h
 //  BlueThooth
 //
-//  Created by Myfly on 17/8/16.
+//  Created by LinYouMu on 17/8/16.
 //  Copyright © 2017年 Myfly. All rights reserved.
 //
 
