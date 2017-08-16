@@ -22,21 +22,11 @@
 #define WRITE_CHARACTERISTIC @"00000102-1212-efde-1523-785feabcd123"
 
 @interface LinBlueToothEngine : NSObject<CBCentralManagerDelegate, CBPeripheralDelegate>
-{
-    NSInteger _curretnTime;
-    NSInteger _curretnCalorie;
-    NSInteger _currentStepsCount;
-    NSInteger _currentFrequency;
-    NSInteger _currentMarker;
-}
+
 // 中心设备
 @property (strong, nonatomic) CBCentralManager *centralManager;
-
-@property (nonatomic, strong) NSMutableArray *seqendIdArray;
-
 //用于存储蓝牙外设的基本属性
 @property (nonatomic,strong) LinBlueToothModel *deviceModel;
-
 //连接成功执行的Block
 @property (nonatomic,copy) void (^connectionSuccess)();
 //连接失败执行的Block
@@ -47,7 +37,6 @@
 @property (nonatomic,copy) void (^scanningToAroundYES)(NSString *);
 //收到设备信息执行的Block
 @property (nonatomic,copy) void (^dataReportingBluetooth)(NSString *);
-
 //标记连接状态
 @property (assign,nonatomic) BOOL isConnect;
 //标记是否为重新连接

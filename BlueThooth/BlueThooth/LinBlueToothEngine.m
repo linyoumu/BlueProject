@@ -16,6 +16,19 @@
 
 @implementation LinBlueToothEngine
 
+#pragma mark 内部函数
+/*
+ * 初始化方法
+ */
+-(id)init{
+    if(self = [super init]){
+        self.centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
+        _isPowerOn = YES;
+        self.isReConnection = NO;
+        self.deviceModel = [[LinBlueToothModel alloc]init];
+    }
+    return self;
+}
 /*
  * 单例方法
  */
@@ -24,7 +37,7 @@
     static dispatch_once_t pred = 0;
     __strong static LinBlueToothEngine *_sharedObject = nil;
     dispatch_once(&pred, ^{
-        _sharedObject = [[LinBlueToothEngine alloc] init]; // or some other init method
+        _sharedObject = [[LinBlueToothEngine alloc] init]; 
     });
     return _sharedObject;
 }
@@ -72,7 +85,7 @@
     
 }
 
-#pragma mark delegate
+#pragma mark CBCentralManagerDelegate
 //蓝牙状态变化
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central{
     _isPowerOn = NO;
@@ -134,6 +147,7 @@
 }
 
 //*************扫描外设中的服务和特征**************
+#pragma mark CBPeripheralDelegate
 //发现外设的service
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error{
     if (error){
@@ -155,9 +169,7 @@
     if (error) {
         return;
     }
-    //NSLog(@"%@", peripheral);
     if ([peripheral.name isEqualToString:BLUETOOTH_DEVICE_NAME]){
-        NSLog(@"发现特征");
         if (peripheral == self.deviceModel.peripheral) {
             for (CBCharacteristic *characteristic in service.characteristics) {
                 if ([characteristic.UUID isEqual:[CBUUID UUIDWithString:WRITE_CHARACTERISTIC]]) {
@@ -183,17 +195,6 @@
             !self.dataReportingBluetooth ? : self.dataReportingBluetooth(resultString);
         }
     }
-}
-
-#pragma mark 内部函数
--(id)init{
-    if(self = [super init]){
-        self.centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
-        _isPowerOn = YES;
-        self.isReConnection = NO;
-        self.deviceModel = [[LinBlueToothModel alloc]init];
-    }
-    return self;
 }
 
 @end
