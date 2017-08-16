@@ -8,10 +8,21 @@
 
 #import "LinBlueToothEngine.h"
 #import "NSString+Engine.h"
+#import "LinBlueToothModel.h"
 
-@interface LinBlueToothEngine(){
+@interface LinBlueToothEngine()<CBCentralManagerDelegate, CBPeripheralDelegate>
+{
     NSString * _state;
 }
+//中心设备
+@property (strong, nonatomic) CBCentralManager *centralManager;
+//用于存储蓝牙外设的基本属性
+@property (nonatomic,strong) LinBlueToothModel *deviceModel;
+//标记是否为重新连接
+@property (nonatomic, assign) BOOL isReConnection;
+//标记蓝牙是否开启
+@property (assign, nonatomic) BOOL isPowerOn;
+
 @end
 
 @implementation LinBlueToothEngine
@@ -23,7 +34,7 @@
 -(id)init{
     if(self = [super init]){
         self.centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
-        _isPowerOn = YES;
+        self.isPowerOn = YES;
         self.isReConnection = NO;
         self.deviceModel = [[LinBlueToothModel alloc]init];
     }
@@ -65,7 +76,6 @@
  *  连接
  */
 -(void)startconnectService{
-    
     [self.centralManager connectPeripheral:self.deviceModel.peripheral options:@{CBConnectPeripheralOptionNotifyOnConnectionKey :@YES}];
     
 }
@@ -124,7 +134,6 @@
         if (peripheral == self.deviceModel.peripheral) {
             self.deviceModel.peripheral.delegate = self;
             [self.deviceModel.peripheral discoverServices:nil];
-            _isConnect = YES;
         }
     }
 }
@@ -140,7 +149,6 @@
 - (void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error{
     if ([peripheral.name isEqualToString:BLUETOOTH_DEVICE_NAME]){
         if (peripheral == self.deviceModel.peripheral) {
-            _isConnect = NO;
             !self.loseConnention ? :self.loseConnention();
         }
     }
@@ -181,6 +189,7 @@
                 }
             }
         }
+        self.isReConnection = YES;
         !self.connectionSuccess ? : self.connectionSuccess ();
     }
 }

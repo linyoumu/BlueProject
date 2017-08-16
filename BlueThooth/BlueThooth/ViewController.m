@@ -37,7 +37,6 @@
     //设置设备连接成功的Block
     [self.blueToothEngine setConnectionSuccess:^{
         weakSelf.infoLabel.text = @"连接成功";
-        weakSelf.blueToothEngine.isReConnection = YES;
         NSLog(@"设备已连接");
     }];
     
