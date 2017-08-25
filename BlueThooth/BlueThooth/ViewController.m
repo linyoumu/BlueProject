@@ -69,6 +69,8 @@
     NSData *data = [command stringHexToBytesData];
     [self.blueToothEngine sendWriteData:data];
 }
+- (IBAction)updateVersion:(id)sender {
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

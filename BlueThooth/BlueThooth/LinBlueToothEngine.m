@@ -9,8 +9,9 @@
 #import "LinBlueToothEngine.h"
 #import "NSString+Engine.h"
 #import "LinBlueToothModel.h"
+#import <iOSDFULibrary/iOSDFULibrary-Swift.h>
 
-@interface LinBlueToothEngine()<CBCentralManagerDelegate, CBPeripheralDelegate>
+@interface LinBlueToothEngine()<CBCentralManagerDelegate, CBPeripheralDelegate, LoggerDelegate, DFUServiceDelegate, DFUProgressDelegate>
 {
     NSString * _state;
 }
@@ -205,5 +206,42 @@
         }
     }
 }
+
+
+
+#pragma mark - LoggerDelegate
+- (void)logWith:(enum LogLevel)level message:(NSString * _Nonnull)message
+{
+    [self goodMessage:[NSString stringWithFormat:@"[Framework][%ld]:%@", (long)level, message]];
+}
+
+#pragma mark - DFUServiceDelegate
+- (void)didStateChangedTo:(enum DFUState)state
+{
+    [self goodMessage:[NSString stringWithFormat:@"[Framework]State changed to:%ld", (long)state]];
+}
+
+- (void)didErrorOccur:(enum DFUError)error withMessage:(NSString * _Nonnull)message
+{
+    [self badMessage:[NSString stringWithFormat:@"[Framework]Error occur:%ld, %@", error, message]];
+}
+
+#pragma mark - DFUProgressDelegate
+- (void)onUploadProgress:(NSInteger)part totalParts:(NSInteger)totalParts progress:(NSInteger)progress currentSpeedBytesPerSecond:(double)currentSpeedBytesPerSecond avgSpeedBytesPerSecond:(double)avgSpeedBytesPerSecond
+{
+    [self goodMessage:[NSString stringWithFormat:@"[Framework]Uploading...%ld", (long)progress]];
+}
+
+#pragma mark - Private
+- (void)goodMessage:(NSString *)goodMessage
+{
+    NSLog(@"[✅]%@", goodMessage);
+}
+
+- (void)badMessage:(NSString *)badMessage
+{
+    NSLog(@"[❌]%@", badMessage);
+}
+
 
 @end
