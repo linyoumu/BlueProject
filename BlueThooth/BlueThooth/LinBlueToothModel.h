@@ -12,6 +12,9 @@
 @interface LinBlueToothModel : NSObject
 
 @property (strong,nonatomic) CBPeripheral *peripheral;
+// 写特征
 @property (strong,nonatomic) CBCharacteristic *characteristcs;
+// 升级特征
+@property (strong,nonatomic) CBCharacteristic *updateCharacteristcs;
 
 @end

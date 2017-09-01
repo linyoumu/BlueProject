@@ -51,25 +51,43 @@
         NSLog(@"info===%@", info);
     }];
 }
+
 //连接
 - (IBAction)conectAction:(id)sender {
     [self.blueToothEngine startScanWithFailure:nil];
 }
+
 //断开连接
 - (IBAction)disConnectAction:(id)sender {
     [self.blueToothEngine cancelConnectService];
 }
+
 //重连
 - (IBAction)reConnectAction:(id)sender {
     [self.blueToothEngine startconnectService];
 }
+
 //发送指令
 - (IBAction)sendCommand:(id)sender {
-    NSString *command = @"020000";
+    NSString *command = @"E1000101";
     NSData *data = [command stringHexToBytesData];
     [self.blueToothEngine sendWriteData:data];
+    
+    //NSString *command = @"10";
+    //NSData *data = [command stringHexToBytesData];
+    //[self.blueToothEngine sendWriteData1:data];
+    
 }
+
+//- (IBAction)sendCommand1:(id)sender {
+//    NSString *command = @"E1000101";
+//    NSData *data = [command stringHexToBytesData];
+//    [self.blueToothEngine sendWriteData1:data];
+//}
+
 - (IBAction)updateVersion:(id)sender {
+    self.blueToothEngine.isUpdateVersion = YES;
+    [self.blueToothEngine startScanWithFailure:nil];
 }
 
 - (void)didReceiveMemoryWarning {

@@ -9,12 +9,16 @@
 #import <Foundation/Foundation.h>
 
 #define BLUETOOTH_DEVICE_NAME @"temp"
+#define BLUETOOTH_DEVICE_DFU @"DfuTarg"
 //服务-id
 #define BLUETOOTH_CBUUID @"00000100-1212-efde-1523-785feabcd123"
 //读特征-id
 #define READ_CHARACTERISTIC @"00000101-1212-efde-1523-785feabcd123"
 //写特征-id
 #define WRITE_CHARACTERISTIC @"00000102-1212-efde-1523-785feabcd123"
+
+//升级特征-id
+//#define UPDATE_CHARACTERISTIC @"00000201-1212-efde-1523-785feabcd123"
 
 @interface LinBlueToothEngine : NSObject
 
@@ -28,6 +32,10 @@
 @property (nonatomic,copy) void (^scanningToAroundYES)(NSString *);
 //收到设备信息执行的Block
 @property (nonatomic,copy) void (^dataReportingBluetooth)(NSString *);
+//执行升级的Block
+@property (nonatomic,copy) void (^uploadVersion)();
+
+@property (nonatomic, assign) BOOL isUpdateVersion;
 
 /*
  * 单例方法

@@ -17,6 +17,9 @@
 }
 //中心设备
 @property (strong, nonatomic) CBCentralManager *centralManager;
+@property (nonatomic, strong) DFUServiceInitiator *initiator;
+@property (nonatomic, strong) DFUServiceController *controller;
+
 //用于存储蓝牙外设的基本属性
 @property (nonatomic,strong) LinBlueToothModel *deviceModel;
 //标记是否为重新连接
@@ -59,7 +62,8 @@
  */
 - (void)startScanWithFailure:(void (^)(NSString * status))failure{
     if (_isPowerOn){
-        [self.centralManager scanForPeripheralsWithServices:nil options:nil];
+        NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], CBCentralManagerScanOptionAllowDuplicatesKey, nil];
+        [self.centralManager scanForPeripheralsWithServices:nil options:options];
     }else{
         !failure ? : failure(_state);
     }
@@ -96,6 +100,29 @@
     
 }
 
+- (void)updateVersion{
+    NSURL *fileURL = [[NSBundle mainBundle] URLForResource:@"water" withExtension:@"zip"];
+    DFUFirmware *firmware = [[DFUFirmware alloc] initWithUrlToZipFile:fileURL];
+    if (firmware) {
+        [self goodMessage:@"Firmware created."];
+    } else {
+        [self badMessage:@"Firmware creation failed."];
+        return;
+    }
+    
+    self.initiator = [[DFUServiceInitiator alloc] initWithCentralManager:self.centralManager target:self.deviceModel.peripheral];
+    [self.initiator withFirmwareFile:firmware];
+    // Optional:
+    self.initiator.forceDfu = YES; // default NO
+    //    self.initiator.packetReceiptNotificationParameter = N; // default is 12
+    self.initiator.logger = self; // - to get log info
+    self.initiator.delegate = self; // - to be informed about current state and errors
+    self.initiator.progressDelegate = self; // - to show progress bar
+    //    self.initiator.peripheralSelector = ... // the default selector is used
+    
+    self.controller = [self.initiator start];
+}
+
 #pragma mark CBCentralManagerDelegate
 //蓝牙状态变化
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central{
@@ -122,10 +149,22 @@
 }
 //搜索成功的回调
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI{
-    if ([peripheral.name isEqualToString:BLUETOOTH_DEVICE_NAME]) {
-        self.deviceModel.peripheral = peripheral;
-        !self.scanningToAroundYES ? : self.scanningToAroundYES(peripheral.name);
+    
+    if (self.isUpdateVersion) {
+        if ([peripheral.name isEqualToString:BLUETOOTH_DEVICE_DFU]){
+            NSLog(@"搜索成功");
+            self.deviceModel.peripheral = peripheral;
+            [self.centralManager stopScan];
+            
+            [self updateVersion];
+        }
+    }else{
+        if ([peripheral.name isEqualToString:BLUETOOTH_DEVICE_NAME]) {
+            self.deviceModel.peripheral = peripheral;
+            !self.scanningToAroundYES ? : self.scanningToAroundYES(peripheral.name);
+        }
     }
+    
     
 }
 
@@ -189,6 +228,9 @@
                     [self.deviceModel.peripheral setNotifyValue:YES forCharacteristic:characteristic];
                 }
             }
+
+            NSData *data = [@"E00000" stringHexToBytesData];
+            [self sendWriteData:data];
         }
         self.isReConnection = YES;
         !self.connectionSuccess ? : self.connectionSuccess ();
@@ -202,6 +244,8 @@
     if ([peripheral.name isEqualToString:BLUETOOTH_DEVICE_NAME]) {
         if (peripheral == self.deviceModel.peripheral) {
             NSString * resultString = [[NSString stringWithHexData:characteristic.value] stringUpperCase];
+            NSLog(@"+++++++===%@", resultString);
+            
             !self.dataReportingBluetooth ? : self.dataReportingBluetooth(resultString);
         }
     }
@@ -210,36 +254,34 @@
 
 
 #pragma mark - LoggerDelegate
-- (void)logWith:(enum LogLevel)level message:(NSString * _Nonnull)message
-{
-    [self goodMessage:[NSString stringWithFormat:@"[Framework][%ld]:%@", (long)level, message]];
+- (void)logWith:(enum LogLevel)level message:(NSString * _Nonnull)message{
+    //[self goodMessage:[NSString stringWithFormat:@"[Framework][%ld]:%@", (long)level, message]];
 }
 
 #pragma mark - DFUServiceDelegate
-- (void)didStateChangedTo:(enum DFUState)state
-{
-    [self goodMessage:[NSString stringWithFormat:@"[Framework]State changed to:%ld", (long)state]];
+- (void)didStateChangedTo:(enum DFUState)state{
+    [self goodMessage:[NSString stringWithFormat:@"State changed to:%ld", (long)state]];
+    if (state == 6) {
+        self.isUpdateVersion = NO;
+        NSLog(@"升级完成");
+    }
 }
 
-- (void)didErrorOccur:(enum DFUError)error withMessage:(NSString * _Nonnull)message
-{
-    [self badMessage:[NSString stringWithFormat:@"[Framework]Error occur:%ld, %@", error, message]];
+- (void)didErrorOccur:(enum DFUError)error withMessage:(NSString * _Nonnull)message{
+    [self badMessage:[NSString stringWithFormat:@"Error occur:%ld, %@", error, message]];
 }
 
 #pragma mark - DFUProgressDelegate
-- (void)onUploadProgress:(NSInteger)part totalParts:(NSInteger)totalParts progress:(NSInteger)progress currentSpeedBytesPerSecond:(double)currentSpeedBytesPerSecond avgSpeedBytesPerSecond:(double)avgSpeedBytesPerSecond
-{
-    [self goodMessage:[NSString stringWithFormat:@"[Framework]Uploading...%ld", (long)progress]];
+- (void)onUploadProgress:(NSInteger)part totalParts:(NSInteger)totalParts progress:(NSInteger)progress currentSpeedBytesPerSecond:(double)currentSpeedBytesPerSecond avgSpeedBytesPerSecond:(double)avgSpeedBytesPerSecond{
+    [self goodMessage:[NSString stringWithFormat:@"Uploading...%ld", (long)progress]];
 }
 
 #pragma mark - Private
-- (void)goodMessage:(NSString *)goodMessage
-{
+- (void)goodMessage:(NSString *)goodMessage{
     NSLog(@"[✅]%@", goodMessage);
 }
 
-- (void)badMessage:(NSString *)badMessage
-{
+- (void)badMessage:(NSString *)badMessage{
     NSLog(@"[❌]%@", badMessage);
 }
 
