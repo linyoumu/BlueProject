@@ -101,7 +101,7 @@
 }
 
 - (void)updateVersion{
-    NSURL *fileURL = [[NSBundle mainBundle] URLForResource:@"water" withExtension:@"zip"];
+    NSURL *fileURL = [[NSBundle mainBundle] URLForResource:@"water_5022" withExtension:@"zip"];
     DFUFirmware *firmware = [[DFUFirmware alloc] initWithUrlToZipFile:fileURL];
     if (firmware) {
         [self goodMessage:@"Firmware created."];
@@ -263,6 +263,7 @@
     [self goodMessage:[NSString stringWithFormat:@"State changed to:%ld", (long)state]];
     if (state == 6) {
         self.isUpdateVersion = NO;
+        self.centralManager.delegate = self;
         NSLog(@"升级完成");
     }
 }
