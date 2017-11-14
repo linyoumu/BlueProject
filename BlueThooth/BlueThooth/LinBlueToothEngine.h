@@ -34,34 +34,28 @@
 @property (nonatomic,copy) void (^dataReportingBluetooth)(NSString *);
 //执行升级的Block
 @property (nonatomic,copy) void (^uploadVersion)();
-
 @property (nonatomic, assign) BOOL isUpdateVersion;
 
 /*
  * 单例方法
  */
 +(LinBlueToothEngine *)shareInstance;
-
 /*
  * 扫描设备
  */
 - (void)startScanWithFailure:(void (^)(NSString * status))failure;
-
 /*
  * 停止扫描设备
  */
 - (void)stopScan;
-
 /**
  *  连接
  */
 -(void)startconnectService;
-
 /**
  *  取消连接
  */
 -(void)cancelConnectService;
-
 /*
  *  发送数据
  */
